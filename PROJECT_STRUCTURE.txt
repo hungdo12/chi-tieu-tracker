@@ -1,0 +1,10 @@
+chi-tieu-tracker/
+├── backend/
+│   ├── main.py              ← Server chính (FastAPI)
+│   └── requirements.txt     ← Thư viện Python cần cài
+├── frontend/
+│   └── index.html           ← Dashboard web (mobile-friendly)
+├── docs/
+│   └── HUONG_DAN.md         ← Hướng dẫn chi tiết
+├── setup_webhook.py         ← Script đăng ký webhook (chạy 1 lần)
+└── render.yaml              ← Config deploy Render.com

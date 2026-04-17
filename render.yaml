@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: chi-tieu-tracker
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GOOGLE_SHEETS_ID
+        sync: false
+      - key: GOOGLE_CREDS_JSON
+        sync: false

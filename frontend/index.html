@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Chi Tiêu Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --bg2: #13161e;
+    --bg3: #1a1e28;
+    --surface: #1e2330;
+    --surface2: #252a3a;
+    --border: #2d3347;
+    --accent: #00e5b0;
+    --accent2: #0099ff;
+    --accent3: #ff6b6b;
+    --accent4: #ffd166;
+    --text: #e8ecf4;
+    --text2: #9099b2;
+    --text3: #5a6280;
+    --font: 'Be Vietnam Pro', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --r: 14px;
+    --r2: 20px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── TOP BAR ─── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13,15,20,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .topbar-logo {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .topbar-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .topbar-sub {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  .topbar-right { margin-left: auto; }
+
+  .btn-refresh {
+    width: 36px; height: 36px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text2);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .btn-refresh:hover { background: var(--surface2); color: var(--accent); }
+  .btn-refresh.spin { animation: spin .7s linear; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── MAIN ─── */
+  .main { padding: 16px; max-width: 520px; margin: 0 auto; }
+
+  /* ─── MONTH SELECTOR ─── */
+  .month-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .month-btn {
+    width: 36px; height: 36px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text2);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .month-btn:hover { background: var(--surface2); color: var(--accent); }
+
+  .month-label {
+    flex: 1;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-family: var(--mono);
+    color: var(--accent);
+  }
+
+  /* ─── GRAND TOTAL CARD ─── */
+  .grand-card {
+    background: linear-gradient(135deg, #0a2a1e 0%, #0d1f35 100%);
+    border: 1px solid rgba(0,229,176,0.2);
+    border-radius: var(--r2);
+    padding: 20px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .grand-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(0,229,176,0.1) 0%, transparent 70%);
+  }
+  .grand-label {
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .grand-amount {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    font-family: var(--mono);
+    color: var(--text);
+  }
+  .grand-meta {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+
+  /* ─── USER CARDS ─── */
+  .section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text3);
+    font-weight: 600;
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
+
+  .user-cards { display: flex; flex-direction: column; gap: 12px; }
+
+  .user-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r2);
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .user-card:hover { border-color: var(--accent2); }
+
+  .user-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .user-avatar {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .user-info { flex: 1 }
+  .user-name { font-size: 15px; font-weight: 700; }
+  .user-meta { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+  .user-total {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .user-chevron {
+    font-size: 12px;
+    color: var(--text3);
+    transition: transform .25s;
+    margin-left: 4px;
+  }
+  .user-card.open .user-chevron { transform: rotate(180deg); }
+
+  /* ─── BUDGET BAR ─── */
+  .budget-bar-wrap {
+    padding: 0 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .budget-bar-track {
+    height: 6px;
+    background: var(--bg3);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 5px;
+  }
+  .budget-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+  }
+  .budget-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  /* ─── CATEGORY LIST ─── */
+  .user-detail {
+    display: none;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card.open .user-detail { display: block; }
+
+  .cat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .cat-row:last-child { border-bottom: none; }
+
+  .cat-icon { width: 28px; text-align: center; font-size: 16px; flex-shrink: 0; }
+  .cat-name { flex: 1; font-size: 13px; color: var(--text2); }
+  .cat-bar-wrap { width: 80px; }
+  .cat-bar-track { height: 4px; background: var(--bg3); border-radius: 99px; overflow: hidden; }
+  .cat-bar-fill { height: 100%; border-radius: 99px; background: var(--accent2); }
+  .cat-amount {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 60px;
+    text-align: right;
+  }
+
+  /* ─── RECENT EXPENSES ─── */
+  .recent-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--accent2);
+    font-size: 12px;
+    font-family: var(--font);
+    cursor: pointer;
+    padding: 8px 0 2px;
+    text-align: left;
+  }
+  .recent-list { display: none; }
+  .recent-list.open { display: block; }
+
+  .expense-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .expense-row:last-child { border-bottom: none; }
+
+  .expense-cat-icon { font-size: 14px; width: 22px; text-align: center; }
+  .expense-info { flex: 1 }
+  .expense-note { font-size: 12px; color: var(--text); }
+  .expense-time { font-size: 10px; color: var(--text3); margin-top: 1px; font-family: var(--mono); }
+  .expense-amount { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent3); }
+
+  /* ─── EMPTY / LOADING ─── */
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text3);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-title { font-size: 16px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; line-height: 1.6; }
+
+  .loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+  }
+  .loading-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; }
+  .loading-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: bounce .9s infinite;
+  }
+  .loading-dot:nth-child(2) { animation-delay: .15s; }
+  .loading-dot:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: .6; }
+    40% { transform: translateY(-10px); opacity: 1; }
+  }
+
+  /* ─── ERROR ─── */
+  .error-bar {
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.3);
+    border-radius: var(--r);
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--accent3);
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  /* ─── SETUP GUIDE ─── */
+  .setup-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r2);
+    padding: 16px;
+    margin-top: 20px;
+  }
+  .setup-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent4);
+    margin-bottom: 10px;
+  }
+  .setup-step {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text2);
+  }
+  .setup-step:last-child { border-bottom: none; }
+  .step-num {
+    width: 22px; height: 22px;
+    background: rgba(0,229,176,0.1);
+    border: 1px solid rgba(0,229,176,0.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  code {
+    background: var(--bg3);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+  }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    text-align: center;
+    padding: 24px 16px;
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  /* ─── COLORS per user index ─── */
+  .color-0 { background: rgba(0,229,176,0.15); color: #00e5b0; }
+  .color-1 { background: rgba(0,153,255,0.15); color: #0099ff; }
+  .color-2 { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+  .color-3 { background: rgba(255,209,102,0.15); color: #ffd166; }
+  .color-4 { background: rgba(155,89,182,0.2); color: #bb86fc; }
+  .color-5 { background: rgba(255,159,67,0.15); color: #ff9f43; }
+
+  .total-0 { color: #00e5b0; }
+  .total-1 { color: #0099ff; }
+  .total-2 { color: #ff6b6b; }
+  .total-3 { color: #ffd166; }
+  .total-4 { color: #bb86fc; }
+  .total-5 { color: #ff9f43; }
+
+  /* ─── ANIMATIONS ─── */
+  .fade-in { animation: fadeIn .4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">💸</div>
+  <div>
+    <div class="topbar-title">Chi Tiêu Tracker</div>
+    <div class="topbar-sub" id="last-update">Đang tải...</div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-refresh" id="btn-refresh" onclick="refresh()" title="Làm mới">↻</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Month selector -->
+  <div class="month-row">
+    <button class="month-btn" onclick="prevMonth()">‹</button>
+    <div class="month-label" id="month-label">--/----</div>
+    <button class="month-btn" onclick="nextMonth()">›</button>
+  </div>
+
+  <!-- Error -->
+  <div class="error-bar" id="error-bar"></div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="loading-dots">
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+    </div>
+    <div>Đang tải dữ liệu...</div>
+  </div>
+
+  <!-- Content -->
+  <div id="content" style="display:none">
+
+    <!-- Grand total -->
+    <div class="grand-card fade-in" id="grand-card">
+      <div class="grand-label">Tổng Chi Tiêu Tháng</div>
+      <div class="grand-amount" id="grand-total">0đ</div>
+      <div class="grand-meta" id="grand-meta"></div>
+    </div>
+
+    <!-- Users section -->
+    <div class="section-title">Chi tiết theo người</div>
+    <div class="user-cards" id="user-cards"></div>
+
+    <!-- Setup guide if no data -->
+    <div id="setup-guide" style="display:none">
+      <div class="setup-card fade-in">
+        <div class="setup-title">⚡ Hướng dẫn bắt đầu</div>
+        <div class="setup-step">
+          <div class="step-num">1</div>
+          <div>Tạo bot Telegram tại <strong>@BotFather</strong>, lấy token</div>
+        </div>
+        <div class="setup-step">
+          <div class="step-num">2</div>
+          <div>Đăng ký webhook: POST <code>/api/register-webhook</code> với token + URL app</div>
+        </div>
+        <div class="setup-step">
+          <div class="step-num">3</div>
+          <div>Nhắn bot của bạn <code>/start</code> rồi <code>/register TênBạn</code></div>
+        </div>
+        <div class="setup-step">
+          <div class="step-num">4</div>
+          <div>Bắt đầu ghi: <code>50k ăn phở</code> hay <code>2tr mua áo</code></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer" id="footer"></div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let currentMonth = '';
+let allMonths = [];
+let summaryData = null;
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  const now = new Date();
+  currentMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  await loadMonths();
+  await loadSummary();
+});
+
+// ─── Month nav ───────────────────────────────────────────────────────────────
+function prevMonth() {
+  const [y, m] = currentMonth.split('-').map(Number);
+  const d = new Date(y, m - 2, 1);
+  currentMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  loadSummary();
+}
+function nextMonth() {
+  const [y, m] = currentMonth.split('-').map(Number);
+  const d = new Date(y, m, 1);
+  const now = new Date();
+  if (d > now) return;
+  currentMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  loadSummary();
+}
+
+function updateMonthLabel() {
+  const [y, m] = currentMonth.split('-').map(Number);
+  const months = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6',
+                  'Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+  document.getElementById('month-label').textContent = `${months[m-1]} ${y}`;
+}
+
+// ─── Load months ─────────────────────────────────────────────────────────────
+async function loadMonths() {
+  try {
+    const res = await fetch('/api/months');
+    const data = await res.json();
+    allMonths = data.months || [];
+  } catch(e) {}
+}
+
+// ─── Load summary ─────────────────────────────────────────────────────────────
+async function loadSummary() {
+  updateMonthLabel();
+  showLoading(true);
+  hideError();
+
+  try {
+    const res = await fetch(`/api/summary?month=${currentMonth}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    summaryData = await res.json();
+    renderSummary(summaryData);
+    document.getElementById('last-update').textContent =
+      'Cập nhật: ' + new Date().toLocaleTimeString('vi-VN');
+  } catch(e) {
+    showError('Không thể kết nối server. Kiểm tra lại cấu hình.');
+    console.error(e);
+  } finally {
+    showLoading(false);
+  }
+}
+
+function refresh() {
+  const btn = document.getElementById('btn-refresh');
+  btn.classList.add('spin');
+  setTimeout(() => btn.classList.remove('spin'), 700);
+  loadSummary();
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function fmtVND(n) {
+  n = Math.round(n);
+  if (n >= 1_000_000) return (n/1_000_000).toFixed(1).replace('.0','') + 'tr';
+  if (n >= 1_000) return Math.round(n/1000) + 'k';
+  return n.toLocaleString('vi') + 'đ';
+}
+
+function fmtDate(str) {
+  if (!str) return '';
+  const d = new Date(str);
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function getCatIcon(catName) {
+  const map = {
+    'Ăn uống': '🍜', 'Cà phê': '☕', 'Di chuyển': '⛽',
+    'Nhà cửa': '🏠', 'Mua sắm': '🛍️', 'Y tế': '💊',
+    'Thể thao': '💪', 'Giải trí': '🎮', 'Khác': '📦'
+  };
+  for (const [k, v] of Object.entries(map)) {
+    if (catName.includes(k)) return v;
+  }
+  return '📦';
+}
+
+function renderSummary(data) {
+  const content = document.getElementById('content');
+  content.style.display = 'block';
+
+  // Grand total
+  document.getElementById('grand-total').textContent = fmtVND(data.grand_total || 0);
+
+  const userCount = Object.keys(data.users || {}).length;
+  const totalCount = Object.values(data.users || {}).reduce((s, u) => s + (u.count||0), 0);
+  document.getElementById('grand-meta').textContent =
+    `${userCount} người · ${totalCount} khoản chi`;
+
+  // User cards
+  const container = document.getElementById('user-cards');
+  container.innerHTML = '';
+
+  const userNames = Object.keys(data.users || {});
+
+  if (userNames.length === 0) {
+    document.getElementById('setup-guide').style.display = 'block';
+    document.getElementById('grand-card').style.display = 'none';
+    container.innerHTML = '';
+    setFooter('Chưa có dữ liệu tháng này');
+    return;
+  }
+
+  document.getElementById('setup-guide').style.display = 'none';
+  document.getElementById('grand-card').style.display = 'block';
+
+  // Sort by total desc
+  const sorted = userNames.sort((a, b) => (data.users[b].total || 0) - (data.users[a].total || 0));
+  const budgetMap = {};
+  (data.registered_users || []).forEach(u => budgetMap[u.name] = u.budget);
+
+  sorted.forEach((name, idx) => {
+    const u = data.users[name];
+    const colorIdx = idx % 6;
+    const budget = budgetMap[name] || 0;
+    const initial = name.charAt(0).toUpperCase();
+
+    // Sort categories
+    const cats = Object.entries(u.categories || {}).sort((a,b) => b[1]-a[1]);
+    const maxCat = cats[0] ? cats[0][1] : 1;
+
+    // Budget bar
+    let budgetHTML = '';
+    if (budget > 0) {
+      const pct = Math.min(100, Math.round((u.total / budget) * 100));
+      const barColor = pct > 90 ? '#ff6b6b' : pct > 70 ? '#ffd166' : '#00e5b0';
+      budgetHTML = `
+        <div class="budget-bar-wrap">
+          <div class="budget-bar-track">
+            <div class="budget-bar-fill" style="width:${pct}%;background:${barColor}"></div>
+          </div>
+          <div class="budget-bar-labels">
+            <span>${pct}% ngân sách</span>
+            <span>${fmtVND(budget)}</span>
+          </div>
+        </div>`;
+    }
+
+    // Category rows
+    const catRows = cats.map(([cat, amt]) => `
+      <div class="cat-row">
+        <div class="cat-icon">${getCatIcon(cat)}</div>
+        <div class="cat-name">${cat.replace(/^[^\s]+\s/, '')}</div>
+        <div class="cat-bar-wrap">
+          <div class="cat-bar-track">
+            <div class="cat-bar-fill" style="width:${Math.round((amt/maxCat)*100)}%"></div>
+          </div>
+        </div>
+        <div class="cat-amount">${fmtVND(amt)}</div>
+      </div>`).join('');
+
+    // Recent expenses (last 10)
+    const recents = (u.expenses || []).slice(-10).reverse();
+    const recentRows = recents.map(e => `
+      <div class="expense-row">
+        <div class="expense-cat-icon">${getCatIcon(e.category||'')}</div>
+        <div class="expense-info">
+          <div class="expense-note">${e.note || ''}</div>
+          <div class="expense-time">${fmtDate(e.timestamp)}</div>
+        </div>
+        <div class="expense-amount">-${fmtVND(e.amount)}</div>
+      </div>`).join('');
+
+    const cardId = `card-${idx}`;
+    const card = document.createElement('div');
+    card.className = 'user-card fade-in';
+    card.style.animationDelay = `${idx * 0.08}s`;
+    card.innerHTML = `
+      <div class="user-card-header" onclick="toggleCard('${cardId}')">
+        <div class="user-avatar color-${colorIdx}">${initial}</div>
+        <div class="user-info">
+          <div class="user-name">${name}</div>
+          <div class="user-meta">${u.count} khoản · ${cats.length} danh mục</div>
+        </div>
+        <div class="user-total total-${colorIdx}">${fmtVND(u.total)}</div>
+        <div class="user-chevron">▼</div>
+      </div>
+      ${budgetHTML}
+      <div class="user-detail">
+        ${cats.length ? catRows : '<div style="color:var(--text3);font-size:12px;padding:4px 0">Chưa có dữ liệu</div>'}
+        ${recents.length ? `
+          <button class="recent-btn" onclick="toggleRecent(this)">▸ Giao dịch gần đây (${recents.length})</button>
+          <div class="recent-list">${recentRows}</div>
+        ` : ''}
+      </div>
+    `;
+    card.id = cardId;
+    container.appendChild(card);
+  });
+
+  const [y, m] = currentMonth.split('-').map(Number);
+  setFooter(`Dữ liệu tháng ${m}/${y} · ${sorted.length} người dùng`);
+}
+
+function toggleCard(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function toggleRecent(btn) {
+  const list = btn.nextElementSibling;
+  list.classList.toggle('open');
+  btn.textContent = list.classList.contains('open')
+    ? btn.textContent.replace('▸', '▾')
+    : btn.textContent.replace('▾', '▸');
+}
+
+// ─── UI helpers ──────────────────────────────────────────────────────────────
+function showLoading(v) {
+  document.getElementById('loading').style.display = v ? 'block' : 'none';
+  if (v) document.getElementById('content').style.display = 'none';
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-bar');
+  el.textContent = '⚠️ ' + msg;
+  el.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('error-bar').style.display = 'none';
+}
+
+function setFooter(msg) {
+  document.getElementById('footer').textContent = msg;
+}
+</script>
+</body>
+</html>
