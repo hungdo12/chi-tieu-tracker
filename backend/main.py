@@ -361,9 +361,11 @@ async def telegram_webhook(bot_token: str, request: Request):
         
         user_name = parts[1].strip()
         if user:
+            update_user_chat_id(gc, bot_token, chat_id)
             await send_telegram(bot_token, chat_id, f"✅ Bạn đã đăng ký rồi với tên <b>{user['user_name']}</b>")
         else:
             register_user(gc, bot_token, user_name, chat_id)
+            update_user_chat_id(gc, bot_token, chat_id)
             await send_telegram(bot_token, chat_id,
                 f"✅ Đã đăng ký thành công!\n\n"
                 f"👤 Tên: <b>{user_name}</b>\n\n"
