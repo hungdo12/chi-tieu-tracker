@@ -664,7 +664,11 @@ async def startup():
             init_sheets()
             print("✅ Google Sheets connected")
         except Exception as e:
+            import traceback
             print(f"⚠️  Google Sheets error: {e}")
+            print(traceback.format_exc())
+    else:
+        print(f"⚠️  Thiếu biến: SHEETS_ID='{GOOGLE_SHEETS_ID}' CREDS='{GOOGLE_CREDS_JSON[:20] if GOOGLE_CREDS_JSON else 'TRỐNG'}'")
     
     # Scheduler: gửi tổng kết tháng vào ngày 1 mỗi tháng, 8:00 sáng
     scheduler.add_job(send_monthly_summary, "cron", day=1, hour=8, minute=0)
